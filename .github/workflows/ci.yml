@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   server:
@@ -43,6 +43,34 @@ jobs:
             mkdir -p android/gradle/wrapper
             cp /tmp/wd_scaffold/android/gradle/wrapper/* android/gradle/wrapper/
             chmod +x android/gradlew
+          fi
+      - name: Fix exhaustive occupation policy switch
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('lib/main.dart')
+          s = p.read_text(encoding='utf-8')
+          old = "'balanced'=>'توازن بين الاستقرار والتكلفة والعائد من الإقليم المحتل.'};"
+          new = "'balanced'=>'توازن بين الاستقرار والتكلفة والعائد من الإقليم المحتل.',_=>'توازن بين الاستقرار والتكلفة والعائد من الإقليم المحتل.'};"
+          if old in s:
+              p.write_text(s.replace(old, new, 1), encoding='utf-8')
+              print('Applied Dart exhaustive-switch fix.')
+          elif new in s:
+              print('Dart exhaustive-switch fix already present.')
+          else:
+              raise SystemExit('Expected occupation switch was not found; refusing to patch an unknown file.')
+          PY
+      - name: Commit Dart source fix
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          if ! git diff --quiet -- lib/main.dart; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add lib/main.dart
+            git commit -m "Fix exhaustive occupation policy switch"
+            git push
           fi
       - name: Build world administrative dataset
         run: python tool/fetch_world_data.py
