@@ -44,13 +44,21 @@ jobs:
             cp /tmp/wd_scaffold/android/gradle/wrapper/* android/gradle/wrapper/
             chmod +x android/gradlew
           fi
-      - name: Repair malformed numeric ternaries in Dart source
+      - name: Repair known Dart analyzer errors
         shell: bash
         run: |
           python - <<'PY'
           from pathlib import Path
           p = Path('lib/main.dart')
           s = p.read_text(encoding='utf-8')
+          original = s
+
+          # The package barrel currently does not export SMapWorld.
+          world_import = "import 'package:countries_world_map/data/maps/world_map.dart';"
+          anchor_import = "import 'package:countries_world_map/countries_world_map.dart';"
+          if world_import not in s:
+              s = s.replace(anchor_import, anchor_import + "\n" + world_import, 1)
+
           fixes = {
               "aiDifficulty=='easy'?.86": "aiDifficulty=='easy'?0.86",
               "p=='cautious'?.90": "p=='cautious'?0.90",
@@ -60,17 +68,26 @@ jobs:
               "battle.encircled?.78": "battle.encircled?0.78",
               "profile==0?.45": "profile==0?0.45",
               "profile==2?.25": "profile==2?0.25",
+              "final soldiers=6+min(32,(sqrt(pop)*1.2).round());": "final int soldiers=(6+min(32,(sqrt(pop)*1.2).round())).toInt();",
+              "final tanks=max(1,min(5,((steel+money)/10).round()));": "final int tanks=max(1,min(5,((steel+money)/10).round())).toInt();",
+              "final aircraft=max(1,min(4,((power+money)/12).round()));": "final int aircraft=max(1,min(4,((power+money)/12).round())).toInt();",
+              "final navy=coastal.contains(id)?max(1,min(3,((fuel+money)/14).round())):0;": "final int navy=coastal.contains(id)?max(1,min(3,((fuel+money)/14).round())).toInt():0;",
+              "name='المجمع الصناعي'": "name:'المجمع الصناعي'",
+              "name='محطة الطاقة'": "name:'محطة الطاقة'",
+              "name='مركز الإمداد'": "name:'مركز الإمداد'",
+              "name='القاعدة الجوية'": "name:'القاعدة الجوية'",
+              "name='الميناء الرئيسي'": "name:'الميناء الرئيسي'",
           }
-          changed = False
           for old, new in fixes.items():
               if old in s:
                   s = s.replace(old, new)
-                  changed = True
-                  print(f'Fixed: {old} -> {new}')
-          if changed:
+                  print(f'Fixed: {old[:70]}')
+
+          if s != original:
               p.write_text(s, encoding='utf-8')
+              print('Applied Dart source repairs.')
           else:
-              print('No malformed numeric ternaries found.')
+              print('No Dart source repairs needed.')
           PY
       - name: Commit repaired Dart source
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -80,7 +97,7 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add lib/main.dart
-            git commit -m "Fix malformed Dart ternary expressions"
+            git commit -m "Fix remaining Dart analyzer errors"
             git push
           fi
       - name: Build world administrative dataset
