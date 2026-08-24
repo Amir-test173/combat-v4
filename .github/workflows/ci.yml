@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   server:
@@ -44,12 +44,50 @@ jobs:
             cp /tmp/wd_scaffold/android/gradle/wrapper/* android/gradle/wrapper/
             chmod +x android/gradlew
           fi
+      - name: Repair malformed numeric ternaries in Dart source
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('lib/main.dart')
+          s = p.read_text(encoding='utf-8')
+          fixes = {
+              "aiDifficulty=='easy'?.86": "aiDifficulty=='easy'?0.86",
+              "p=='cautious'?.90": "p=='cautious'?0.90",
+              "p=='cautious'?.86": "p=='cautious'?0.86",
+              "wonRound?.06": "wonRound?0.06",
+              "wonRound?.13": "wonRound?0.13",
+              "battle.encircled?.78": "battle.encircled?0.78",
+              "profile==0?.45": "profile==0?0.45",
+              "profile==2?.25": "profile==2?0.25",
+          }
+          changed = False
+          for old, new in fixes.items():
+              if old in s:
+                  s = s.replace(old, new)
+                  changed = True
+                  print(f'Fixed: {old} -> {new}')
+          if changed:
+              p.write_text(s, encoding='utf-8')
+          else:
+              print('No malformed numeric ternaries found.')
+          PY
+      - name: Commit repaired Dart source
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          if ! git diff --quiet -- lib/main.dart; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add lib/main.dart
+            git commit -m "Fix malformed Dart ternary expressions"
+            git push
+          fi
       - name: Build world administrative dataset
         run: python tool/fetch_world_data.py
       - name: Install dependencies
         run: flutter pub get
-      - name: Analyze (non-blocking)
-        continue-on-error: true
+      - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
       - name: Tests
         run: flutter test
