@@ -1320,7 +1320,7 @@ class StrategyTab extends StatelessWidget {
   }
 }
 String _occupationName(String p)=>switch(p){'security'=>'أمنية','autonomy'=>'حكم ذاتي','extraction'=>'استخراج مكثف',_=>'متوازنة'};
-String _occupationDescription(String p)=>switch(p){'security'=>'تخفض المقاومة ببطء مقابل تكلفة مالية وقيود أشد.','autonomy'=>'أفضل سياسة لخفض المقاومة والتأييد طويل المدى، لكنها تعطي موارد أقل مباشرة.','extraction'=>'تنقل المال والحديد والوقود بسرعة إلى دولتك، لكنها ترفع المقاومة وخطر الانتفاضة.','balanced'=>'توازن بين الاستقرار والتكلفة والعائد من الإقليم المحتل.'};
+String _occupationDescription(String p)=>switch(p){'security'=>'تخفض المقاومة ببطء مقابل تكلفة مالية وقيود أشد.','autonomy'=>'أفضل سياسة لخفض المقاومة والتأييد طويل المدى، لكنها تعطي موارد أقل مباشرة.','extraction'=>'تنقل المال والحديد والوقود بسرعة إلى دولتك، لكنها ترفع المقاومة وخطر الانتفاضة.','balanced'=>'توازن بين الاستقرار والتكلفة والعائد من الإقليم المحتل.',_=>'توازن بين الاستقرار والتكلفة والعائد من الإقليم المحتل.'};
 
 class InfrastructureTab extends StatelessWidget {
   final GameState game;const InfrastructureTab({super.key,required this.game});
