@@ -1,0 +1,71 @@
+name: Build World Dominion Realism
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build world administrative dataset
+        run: cd .. && python tool/fetch_world_data.py
+      - run: npm install --no-audit --no-fund
+      - run: npm run check
+
+  android-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.1'
+          channel: stable
+          cache: true
+      - name: Restore Gradle wrapper if repository was uploaded without binary wrapper
+        shell: bash
+        run: |
+          if [ ! -f android/gradlew ]; then
+            flutter create /tmp/wd_scaffold --platforms=android --project-name world_dominion --org com.worlddominion
+            cp /tmp/wd_scaffold/android/gradlew android/gradlew
+            cp /tmp/wd_scaffold/android/gradlew.bat android/gradlew.bat
+            mkdir -p android/gradle/wrapper
+            cp /tmp/wd_scaffold/android/gradle/wrapper/* android/gradle/wrapper/
+            chmod +x android/gradlew
+          fi
+      - name: Build world administrative dataset
+        run: python tool/fetch_world_data.py
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Tests
+        run: flutter test
+      - name: Build private-test APK
+        env:
+          DEFAULT_SERVER_URL: ${{ vars.DEFAULT_SERVER_URL }}
+          PRIVACY_POLICY_URL: ${{ vars.PRIVACY_POLICY_URL }}
+          SUPPORT_EMAIL: ${{ vars.SUPPORT_EMAIL }}
+        run: >-
+          flutter build apk --release
+          --dart-define=DEFAULT_SERVER_URL="$DEFAULT_SERVER_URL"
+          --dart-define=PRIVACY_POLICY_URL="$PRIVACY_POLICY_URL"
+          --dart-define=SUPPORT_EMAIL="$SUPPORT_EMAIL"
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: world-dominion-1.4.0-realism-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 30

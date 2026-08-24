@@ -1,0 +1,6 @@
+[
+ {"iso2":"US","iso3":"USA","nameEn":"United States","nameAr":"الولايات المتحدة","capital":"Washington, D.C.","population":335000000,"lat":38,"lng":-97,"landlocked":false,"borders":["CAN","MEX"],"regions":["California","Texas","New York","Florida","Pennsylvania"]},
+ {"iso2":"FR","iso3":"FRA","nameEn":"France","nameAr":"فرنسا","capital":"Paris","population":68000000,"lat":46,"lng":2,"landlocked":false,"borders":["BEL","LUX","DEU","CHE","ITA","ESP","AND","MCO"],"regions":["Île-de-France","Auvergne-Rhône-Alpes","Nouvelle-Aquitaine","Occitanie","Provence-Alpes-Côte d’Azur"]},
+ {"iso2":"TR","iso3":"TUR","nameEn":"Turkey","nameAr":"تركيا","capital":"Ankara","population":86000000,"lat":39,"lng":35,"landlocked":false,"borders":["GRC","BGR","GEO","ARM","AZE","IRN","IRQ","SYR"],"regions":["İstanbul","Ankara","İzmir","Bursa","Antalya","Gaziantep"]},
+ {"iso2":"LB","iso3":"LBN","nameEn":"Lebanon","nameAr":"لبنان","capital":"Beirut","population":6000000,"lat":33.8,"lng":35.8,"landlocked":false,"borders":["SYR","ISR"],"regions":["بيروت","جبل لبنان","الشمال","عكار","البقاع","بعلبك الهرمل","الجنوب","النبطية"]}
+]
