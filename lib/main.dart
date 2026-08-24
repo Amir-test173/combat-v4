@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:countries_world_map/countries_world_map.dart';
+import 'package:countries_world_map/data/maps/world_map.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const kAppVersion='1.4.0-realism';
@@ -699,10 +700,10 @@ class GameState extends ChangeNotifier {
 Map<String,Country> _seedCountries(){
   const coastal={'ARE','ARG','AUS','BGD','BRA','CAN','CHN','DZA','EGY','ESP','FRA','GBR','GEO','IDN','IND','IRN','ISR','ITA','JPN','KOR','LBN','MAR','MEX','MMR','MYS','OMN','PAK','PRK','SAU','SYR','THA','TUR','USA','YEM'};
   Country c(String id,String n,double x,double y,List<String> nb,{String capital='العاصمة',double pop=45,double food=10,double water=9,double fuel=5,double power=7,double steel=4,double money=8}){
-    final soldiers=6+min(32,(sqrt(pop)*1.2).round());
-    final tanks=max(1,min(5,((steel+money)/10).round()));
-    final aircraft=max(1,min(4,((power+money)/12).round()));
-    final navy=coastal.contains(id)?max(1,min(3,((fuel+money)/14).round())):0;
+    final int soldiers=(6+min(32,(sqrt(pop)*1.2).round())).toInt();
+    final int tanks=max(1,min(5,((steel+money)/10).round())).toInt();
+    final int aircraft=max(1,min(4,((power+money)/12).round())).toInt();
+    final int navy=coastal.contains(id)?max(1,min(3,((fuel+money)/14).round())).toInt():0;
     return Country(id:id,name:n,capital:capital,pos:Offset(x,y),neighbors:nb,controller:'AI:$id',population:pop,stock:Resources(food:75+food*2,water:75+water*2,fuel:55+fuel*2,power:65+power*2,steel:45+steel*2,money:70+money*2),production:Resources(food:food,water:water,fuel:fuel,power:power,steel:steel,money:money),army:Army(soldiers:soldiers,tanks:tanks,artillery:max(1,tanks-1),airDefense:max(1,(aircraft/2).ceil()),aircraft:aircraft,helicopters:aircraft>=3?1:0,drones:1,recon:1,navy:navy));
   }
   final list=<Country>[
@@ -760,11 +761,11 @@ List<StrategicSite> _seedStrategicSites(Map<String,Country> countries){
   const coastal={'USA','CAN','MEX','BRA','ARG','GBR','FRA','ESP','ITA','MAR','DZA','EGY','TUR','GEO','SYR','LBN','ISR','SAU','YEM','ARE','OMN','IRN','PAK','IND','BGD','CHN','PRK','KOR','JPN','MMR','THA','MYS','IDN','AUS'};
   for(final c in countries.values){
     out.add(StrategicSite(id:'${c.id}_CAP',countryId:c.id,name:c.capital,kind:'capital',offset:Offset.zero));
-    out.add(StrategicSite(id:'${c.id}_FAC',countryId:c.id,name='المجمع الصناعي',kind:'factory',offset:const Offset(.010,.014)));
-    out.add(StrategicSite(id:'${c.id}_PWR',countryId:c.id,name='محطة الطاقة',kind:'power',offset:const Offset(-.012,.012)));
-    out.add(StrategicSite(id:'${c.id}_SUP',countryId:c.id,name='مركز الإمداد',kind:'supply',offset:const Offset(.012,-.014)));
-    if(c.army.aircraft>0)out.add(StrategicSite(id:'${c.id}_AIR',countryId:c.id,name='القاعدة الجوية',kind:'airport',offset:const Offset(-.013,-.014)));
-    if(coastal.contains(c.id))out.add(StrategicSite(id:'${c.id}_PRT',countryId:c.id,name='الميناء الرئيسي',kind:'port',offset:const Offset(.020,.002)));
+    out.add(StrategicSite(id:'${c.id}_FAC',countryId:c.id,name:'المجمع الصناعي',kind:'factory',offset:const Offset(.010,.014)));
+    out.add(StrategicSite(id:'${c.id}_PWR',countryId:c.id,name:'محطة الطاقة',kind:'power',offset:const Offset(-.012,.012)));
+    out.add(StrategicSite(id:'${c.id}_SUP',countryId:c.id,name:'مركز الإمداد',kind:'supply',offset:const Offset(.012,-.014)));
+    if(c.army.aircraft>0)out.add(StrategicSite(id:'${c.id}_AIR',countryId:c.id,name:'القاعدة الجوية',kind:'airport',offset:const Offset(-.013,-.014)));
+    if(coastal.contains(c.id))out.add(StrategicSite(id:'${c.id}_PRT',countryId:c.id,name:'الميناء الرئيسي',kind:'port',offset:const Offset(.020,.002)));
   }
   return out;
 }
